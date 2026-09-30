@@ -233,7 +233,7 @@
     position: fixed;
 
     top: 18px;
-    left: 255px;
+    left: 245px;
 
     width: 390px;
     bottom: 18px;
@@ -269,11 +269,7 @@
 /* ELEMENTOS DEL PANEL */
 
 .explore-panel a {
-    display: grid;
-
-    grid-template-columns: 34px 1fr;
-
-    gap: 12px;
+    display: block;
 
     padding: 12px;
     margin-bottom: 7px;
