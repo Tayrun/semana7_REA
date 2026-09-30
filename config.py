@@ -21,7 +21,7 @@ COL_CATEGORIA = "EVENTO"
 COL_FECHA = "FECHA"
 
 
-NOMBRE_PROYECTO = "Análisis de Emergencias UNGRD 2019-2022"
+NOMBRE_PROYECTO = "Emergencias en Colombia 2019-2022: análisis de datos abiertos de la UNGRD"
 
 NOMBRE_DATASET = "Emergencias UNGRD"
 
@@ -30,8 +30,4 @@ ENTIDAD = (
     "de Desastres (UNGRD)"
 )
 
-URL_DATASET = (
-    "https://www.datos.gov.co/"
-    "Ambiente-y-Desarrollo-Sostenible/"
-    "Emergencias-UNGRD-/wwkg-r6te"
-)
+URL_DATASET = "https://www.datos.gov.co/Ambiente-y-Desarrollo-Sostenible/Emergencias-UNGRD-/wwkg-r6te"
