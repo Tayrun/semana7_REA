@@ -6,6 +6,196 @@ Dimensión 03 - Análisis territorial
 
 {% block content %}
 
+<div class="container-fluid px-4 px-lg-5 py-5">
 
+    <div class="mb-5">
+
+        <span class="badge text-bg-success mb-3">
+            DIMENSIÓN TERRITORIAL
+        </span>
+
+        <h1 class="display-5 fw-bold">
+            Análisis territorial
+        </h1>
+
+        <p class="lead text-secondary">
+            ¿Cómo se distribuyen las personas afectadas y las emergencias
+            entre los territorios registrados en Colombia?
+        </p>
+
+    </div>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-12 col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Eventos registrados
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ "{:,}".format(total_eventos).replace(",", ".") }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Personas afectadas
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ "{:,.0f}".format(total_personas).replace(",", ".") }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Familias afectadas
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ "{:,.0f}".format(total_familias).replace(",", ".") }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Departamentos
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ total_departamentos }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h4 fw-bold mb-3">
+                        Mayor concentración de personas afectadas
+                    </h2>
+
+                    <p class="text-secondary mb-0">
+
+                        El departamento con mayor número de personas
+                        afectadas registradas es
+
+                        <strong>
+                            {{ departamento_mayor }}
+                        </strong>,
+
+                        con
+
+                        <strong>
+                            {{ "{:,.0f}".format(personas_mayor).replace(",", ".") }}
+                        </strong>
+
+                        personas.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-12 col-lg-6">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <h2 class="h5 fw-bold">
+                        Personas afectadas por departamento
+                    </h2>
+
+                    <p class="text-secondary">
+                        Aquí irá el primer gráfico.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-lg-6">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <h2 class="h5 fw-bold">
+                        Eventos por departamento
+                    </h2>
+
+                    <p class="text-secondary">
+                        Aquí irá el segundo gráfico.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}
