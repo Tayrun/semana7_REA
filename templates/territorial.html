@@ -1,0 +1,653 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dimensión 03 - Análisis territorial
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-4 px-lg-5 py-5">
+
+    <div class="mb-5">
+
+        <span class="badge text-bg-success mb-3">
+            DIMENSIÓN TERRITORIAL
+        </span>
+
+        <h1 class="display-5 fw-bold" id="pregunta">
+            Análisis territorial
+        </h1>
+
+        <p class="lead text-secondary">
+            ¿Cómo se distribuyen las personas afectadas y las emergencias
+            entre los territorios registrados en Colombia?
+        </p>
+
+    </div>
+
+    <section id="variables" class="mb-5">
+        <h2 class="mb-4">Variables analizadas</h2>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Departamento</h5>
+                        <p class="card-text">
+                            Territorio donde se registró la emergencia.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Tipo de emergencia</h5>
+                        <p class="card-text">
+                            Tipo de evento o emergencia registrada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Personas afectadas</h5>
+                        <p class="card-text">
+                            Cantidad de personas afectadas por las emergencias registradas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Familias afectadas</h5>
+                        <p class="card-text">
+                            Cantidad de familias afectadas por las emergencias registradas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- filtors-->
+    <div class="card border-0 shadow-sm mb-5">
+
+        <div class="card-body p-4">
+
+            <h2 class="h5 fw-bold mb-4">
+                Filtros
+            </h2>
+
+            <form method="GET" action="{{ url_for('territorial') }}">
+
+                <div class="row g-4">
+
+                    <!--depart-->
+                    <div class="col-12 col-md-6">
+
+                        <label for="departamento" class="form-label fw-semibold">
+                            Departamento
+                        </label>
+
+                        <select
+                            class="form-select"
+                            id="departamento"
+                            name="departamento"
+                        >
+
+                            <option value="Todos"
+                                {% if departamento_seleccionado == "Todos" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Todos
+                            </option>
+
+                            {% for departamento in departamentos %}
+
+                                <option
+                                    value="{{ departamento }}"
+                                    {% if departamento_seleccionado == departamento %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ departamento }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!--tipo emerg-->
+                    <div class="col-12 col-md-6">
+
+                        <label for="evento" class="form-label fw-semibold">
+                            Tipo de emergencia
+                        </label>
+
+                        <select
+                            class="form-select"
+                            id="evento"
+                            name="evento"
+                        >
+
+                            <option value="Todos"
+                                {% if evento_seleccionado == "Todos" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Todos
+                            </option>
+
+                            {% for evento in eventos %}
+
+                                <option
+                                    value="{{ evento }}"
+                                    {% if evento_seleccionado == evento %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ evento }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!--botones-->
+                <div class="d-flex gap-2 mt-4">
+
+                    <button type="submit" class="btn btn-success">
+                        Aplicar filtros
+                    </button>
+
+                    <a
+                        href="{{ url_for('territorial') }}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Limpiar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+    <div class="row g-4 mb-5">
+
+        <div class="col-12 col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100" id="indicadores">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Eventos registrados
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ "{:,}".format(total_eventos).replace(",", ".") }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Personas afectadas
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ "{:,.0f}".format(total_personas).replace(",", ".") }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Familias afectadas
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ "{:,.0f}".format(total_familias).replace(",", ".") }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Departamentos
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ total_departamentos }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h4 fw-bold mb-3">
+                        Mayor concentración de personas afectadas
+                    </h2>
+
+                    <p class="text-secondary mb-0">
+
+                        El departamento con mayor número de personas
+                        afectadas registradas es
+
+                        <strong>
+                            {{ departamento_mayor }}
+                        </strong>,
+
+                        con
+
+                        <strong>
+                            {{ "{:,.0f}".format(personas_mayor).replace(",", ".") }}
+                        </strong>
+
+                        personas.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4" id="visualizaciones">
+
+
+        <!--grafico 1-->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        Personas afectadas por departamento
+                    </h2>
+
+                    <p class="text-secondary">
+                        Cantidad de personas afectadas registradas en cada departamento.
+                    </p>
+
+                    <div id="grafico-personas"></div>
+                    <p class="text-secondary">
+                        <br><strong>Interpretación:</strong> Muestra una gran desigualdad territorial. Unos pocos departamentos, liderados por Bolívar y Chocó, concentran la gran mayoría de las personas afectadas por emergencias en todo el país.
+                    </p>
+                </div>
+                
+            </div>
+
+        </div>
+
+
+        <!--grafico 2-->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        Eventos registrados por departamento
+                    </h2>
+
+                    <p class="text-secondary">
+                        Cantidad de eventos registrados en cada departamento.
+                    </p>
+
+                    <div id="grafico-eventos"></div>
+
+                    <p class="text-secondary">
+                        <strong>Interpretación:</strong> Evidencia que Cundinamarca y Antioquia lideran en cantidad de emergencias registradas. Esto demuestra que los territorios con más eventos no siempre son los que reportan más víctimas.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!--grafico 3-->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        Relación entre eventos y personas afectadas
+                    </h2>
+
+                    <p class="text-secondary">
+                        Relación entre la cantidad de eventos y las personas afectadas por departamento.
+                    </p>
+
+                    <div id="grafico-relacion"></div>
+
+                    <p class="text-secondary">
+                        <br><strong>Interpretación:</strong> Confirma que no hay relación directa entre la cantidad de incidentes y el número de afectados. Existen departamentos donde muy pocos eventos generaron un impacto poblacional altísimo, y viceversa.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mt-5">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-4" id="hallazgos">
+                Hallazgos principales
+            </h2>
+
+            <div class="mb-4">
+                <h3 class="h6 fw-bold">
+                    1. Mayor concentración de personas afectadas
+                </h3>
+
+                <p class="text-secondary mb-0">
+                    Bolívar presenta la mayor cantidad de personas afectadas
+                    registradas en el conjunto de datos, con aproximadamente
+                    442.530 personas.
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="h6 fw-bold">
+                    2. Diferencias entre eventos y personas afectadas
+                </h3>
+
+                <p class="text-secondary mb-0">
+                    La cantidad de eventos registrados no necesariamente
+                    representa la cantidad de personas afectadas. Algunos
+                    departamentos presentan muchos eventos mientras que otros
+                    pueden registrar menos eventos con una mayor cantidad de
+                    personas afectadas.
+                </p>
+            </div>
+
+            <div>
+                <h3 class="h6 fw-bold">
+                    3. Distribución territorial desigual
+                </h3>
+
+                <p class="text-secondary mb-0">
+                    Las emergencias y las personas afectadas no se distribuyen
+                    de manera uniforme entre los departamentos registrados.
+                    Algunos territorios concentran una mayor cantidad de
+                    registros y personas afectadas.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-3">
+                Limitación
+            </h2>
+
+            <p class="text-secondary mb-0">
+                Los datos corresponden a emergencias registradas y personas
+                afectadas reportadas, por lo que no representan necesariamente
+                la totalidad de emergencias ocurridas ni la población total
+                de cada departamento.
+            </p>
+
+        </div>
+
+    </div>
+
+    <!--decision-->
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-3" id="decision-datos">
+                Decisión basada en datos
+            </h2>
+
+            <p class="text-secondary mb-0">
+                La información territorial puede utilizarse para priorizar
+                el análisis y seguimiento de los departamentos que concentran
+                una mayor cantidad de personas afectadas y eventos registrados,
+                con el fin de orientar la planificación de recursos para la
+                atención de emergencias.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="d-flex justify-content-between mt-5 mb-4">
+    
+    <a href="{{ url_for('poblacional') }}" class="btn btn-outline-success">
+        &laquo; Volver a Dimensión Poblacional
+    </a>
+
+    <a href="{{ url_for('temporal') }}" class="btn btn-success">
+        Ver Dimensión Temporal &raquo;
+    </a>
+
+</div>
+
+</div>
+
+
+
+
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+<script id="personas-data" type="application/json">
+    {{ personas_departamento | tojson }}
+</script>
+
+<script id="eventos-data" type="application/json">
+    {{ eventos_departamento | tojson }}
+</script>
+
+<script id="relacion-data" type="application/json">
+    {{ relacion_departamento | tojson }}
+</script>
+
+<script>
+
+    //Grafico 1
+
+    const personasData = JSON.parse(
+        document.getElementById("personas-data").textContent
+    );
+
+    const departamentosPersonas = Object.keys(personasData);
+
+    const personasValores = Object.values(personasData);
+
+    const graficoPersonas = [{
+        x: personasValores,
+        y: departamentosPersonas,
+        type: "bar",
+        orientation: "h"
+    }];
+
+    const layoutPersonas = {
+        margin: {
+            l: 120,
+            r: 30,
+            t: 20,
+            b: 50
+        },
+        xaxis: {
+            title: "Personas afectadas"
+        },
+        yaxis: {
+            title: "Departamento",
+            autorange: "reversed"
+        }
+    };
+
+    Plotly.newPlot(
+        "grafico-personas",
+        graficoPersonas,
+        layoutPersonas,
+        {responsive: true}
+    );
+
+    //Grafico
+
+    const eventosData = JSON.parse(
+        document.getElementById("eventos-data").textContent
+    );
+
+    const departamentosEventos = Object.keys(eventosData);
+
+    const eventosValores = Object.values(eventosData);
+
+    const graficoEventos = [{
+        x: departamentosEventos,
+        y: eventosValores,
+        type: "bar"
+    }];
+
+    const layoutEventos = {
+        margin: {
+            l: 60,
+            r: 30,
+            t: 20,
+            b: 100
+        },
+        xaxis: {
+            title: "Departamento",
+            tickangle: -45
+        },
+        yaxis: {
+            title: "Eventos registrados"
+        }
+    };
+
+    Plotly.newPlot(
+        "grafico-eventos",
+        graficoEventos,
+        layoutEventos,
+        {responsive: true}
+    );
+
+
+    // ==========================================
+    // GRÁFICO 3 - EVENTOS VS PERSONAS
+    // ==========================================
+
+    const relacionData = JSON.parse(
+        document.getElementById("relacion-data").textContent
+    );
+
+    const graficoRelacion = [{
+        x: relacionData.map(item => item.eventos),
+        y: relacionData.map(item => item.personas),
+        text: relacionData.map(item => item.DEPARTAMENTO),
+        mode: "markers",
+        type: "scatter"
+    }];
+
+    const layoutRelacion = {
+        margin: {
+            l: 70,
+            r: 30,
+            t: 20,
+            b: 60
+        },
+        xaxis: {
+            title: "Eventos registrados"
+        },
+        yaxis: {
+            title: "Personas afectadas"
+        },
+        hovermode: "closest"
+    };
+
+    Plotly.newPlot(
+        "grafico-relacion",
+        graficoRelacion,
+        layoutRelacion,
+        {responsive: true}
+    );
+
+</script>
+
+{% endblock %}
