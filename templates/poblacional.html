@@ -4,10 +4,839 @@
 Dimensión 01 - Análisis poblacional
 {% endblock %}
 
-{% block extra_css %}
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='') }}"> -->
+{% block content %}
+
+<div class="container-fluid px-4 px-lg-5 py-5">
+
+    <div class="mb-5">
+
+        <span class="badge text-bg-success mb-3">
+            DIMENSIÓN POBLACIONAL
+        </span>
+
+        <h1 class="display-5 fw-bold" id="pregunta">
+            Análisis poblacional
+        </h1>
+
+        <p class="lead text-secondary">
+            ¿Cómo está compuesta y distribuida la población analizada
+            según sus principales características?
+        </p>
+
+    </div>
+
+    <section id="variables" class="mb-5">
+        <h2 class="mb-4">Variables analizadas</h2>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Personas afectadas</h5>
+                        <p class="card-text">
+                            Cantidad de personas afectadas en cada emergencia registrada.
+                            Es la variable central para medir la magnitud poblacional del impacto.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Familias afectadas</h5>
+                        <p class="card-text">
+                            Cantidad de familias afectadas en cada emergencia.
+                            Permite dimensionar el impacto a nivel de hogares.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Fallecidos, heridos y desaparecidos</h5>
+                        <p class="card-text">
+                            Víctimas directas de las emergencias. Describen la gravedad
+                            del impacto sobre la vida y la integridad de la población.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Viviendas y tipo de evento</h5>
+                        <p class="card-text">
+                            Viviendas destruidas y averiadas, analizadas según el tipo
+                            de emergencia (inundación, vendaval, movimiento en masa, etc.).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- filtros -->
+    <div class="card border-0 shadow-sm mb-5">
+
+        <div class="card-body p-4">
+
+            <h2 class="h5 fw-bold mb-4">
+                Filtros
+            </h2>
+
+            <form method="GET" action="{{ url_for('poblacional') }}">
+
+                <div class="row g-4">
+
+                    <div class="col-12 col-md-6">
+
+                        <label for="evento" class="form-label fw-semibold">
+                            Tipo de emergencia
+                        </label>
+
+                        <select
+                            class="form-select"
+                            id="evento"
+                            name="evento"
+                        >
+
+                            <option value="Todos"
+                                {% if evento_seleccionado == "Todos" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Todos
+                            </option>
+
+                            {% for evento in eventos %}
+
+                                <option
+                                    value="{{ evento }}"
+                                    {% if evento_seleccionado == evento %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ evento }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+
+                    <button type="submit" class="btn btn-success">
+                        Aplicar filtros
+                    </button>
+
+                    <a
+                        href="{{ url_for('poblacional') }}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Limpiar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4 mb-5" id="indicadores">
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-secondary mb-2">
+                        Personas / Familias (composición del hogar)
+                    </p>
+                    <h2 class="fw-bold">
+                        {{ "{:,.0f}".format(total_personas).replace(",", ".") }}
+                        <span class="fs-6 text-secondary">/ {{ "{:,.0f}".format(total_familias).replace(",", ".") }}</span>
+                    </h2>
+                    <small class="text-secondary">
+                        {{ personas_por_familia }} personas por familia ·
+                        {{ "{:,}".format(total_eventos).replace(",", ".") }} eventos en el filtro
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-secondary mb-2">
+                        Víctimas graves (fallecidos + heridos + desaparecidos)
+                    </p>
+                    <h2 class="fw-bold">
+                        {{ "{:,}".format(total_victimas).replace(",", ".") }}
+                    </h2>
+                    <small class="text-secondary">
+                        {{ "{:,}".format(total_fallecidos).replace(",", ".") }} fallecidos ·
+                        {{ "{:,}".format(total_heridos).replace(",", ".") }} heridos ·
+                        {{ "{:,}".format(total_desaparecidos).replace(",", ".") }} desaparecidos ·
+                        {{ tasa_fallecidos_10k }} fallecidos por cada 10.000 afectados
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-secondary mb-2">
+                        Viviendas afectadas (destruidas + averiadas)
+                    </p>
+                    <h2 class="fw-bold">
+                        {{ "{:,}".format(total_viviendas).replace(",", ".") }}
+                    </h2>
+                    <small class="text-secondary">
+                        {{ "{:,}".format(total_viv_destruidas).replace(",", ".") }} destruidas ·
+                        {{ "{:,}".format(total_viv_averiadas).replace(",", ".") }} averiadas ({{ pct_averiadas }}%)
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-secondary mb-2">
+                        Severidad y concentración
+                    </p>
+                    <h2 class="fw-bold">
+                        {{ "{:,.1f}".format(promedio_personas).replace(",", ".") }}
+                        <span class="fs-6 text-secondary">prom. / mediana {{ "{:,.0f}".format(mediana_personas).replace(",", ".") }}</span>
+                    </h2>
+                    <small class="text-secondary">
+                        {{ "{:,}".format(eventos_sin_personas).replace(",", ".") }} eventos ({{ pct_sin_personas }}%)
+                        sin personas registradas
+                    </small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h4 fw-bold mb-3">
+                        1. Cantidad total de registros
+                    </h2>
+
+                    <p class="text-secondary mb-0">
+                        La dimensión analiza
+                        <strong>{{ "{:,}".format(total_eventos).replace(",", ".") }} registros</strong>
+                        de emergencias (filtro actual: {{ evento_seleccionado }}),
+                        distribuidos en
+                        <strong>{{ total_categorias }} categorías</strong>
+                        de tipo de emergencia. Cada registro aporta las variables
+                        poblacionales PERSONAS, FAMILIAS, FALLECIDOS, HERIDOS,
+                        DESAPARECIDOS y VIVIENDAS DESTRUIDAS / AVERIADAS.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mb-5">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-2">
+                2 y 3. Categorías principales y porcentaje de participación
+            </h2>
+
+            <p class="text-secondary">
+                Top 12 tipos de emergencia por número de registros, con su participación
+                en registros y en personas afectadas. La participación se calcula sobre
+                el filtro actual.
+            </p>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Categoría (EVENTO)</th>
+                            <th class="text-end">Registros</th>
+                            <th class="text-end">% registros</th>
+                            <th class="text-end">Personas</th>
+                            <th class="text-end">% personas</th>
+                            <th class="text-end">Fallecidos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in tabla_categorias %}
+                        <tr>
+                            <td>{{ fila.EVENTO }}</td>
+                            <td class="text-end">{{ "{:,}".format(fila.registros).replace(",", ".") }}</td>
+                            <td class="text-end">{{ fila.pct_registros }}%</td>
+                            <td class="text-end">{{ "{:,.0f}".format(fila.personas).replace(",", ".") }}</td>
+                            <td class="text-end">{{ fila.pct_personas }}%</td>
+                            <td class="text-end">{{ "{:,}".format(fila.fallecidos).replace(",", ".") }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="text-secondary mt-3 mb-0">
+                <strong>Interpretación:</strong> pocos grupos concentran la mayoría de registros
+                y, sobre todo, de personas. Sin filtro, 3 categorías suman ~69% de registros
+                y la inundación sola el 73,1% de personas: frecuencia y volumen no coinciden.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mb-5">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-3">
+                4. Grupos predominantes y minoritarios
+            </h2>
+
+            <div class="row g-4">
+
+                <div class="col-12 col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <p class="text-secondary mb-1">Predominante por registros</p>
+                        <h5 class="fw-bold mb-1">{{ grupo_pred_conteo.nombre }}</h5>
+                        <p class="text-secondary mb-0">
+                            {{ "{:,}".format(grupo_pred_conteo.n).replace(",", ".") }} registros
+                            ({{ grupo_pred_conteo.pct }}% del total).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <p class="text-secondary mb-1">Predominante por personas afectadas</p>
+                        <h5 class="fw-bold mb-1">{{ grupo_pred_personas.nombre }}</h5>
+                        <p class="text-secondary mb-0">
+                            {{ "{:,.0f}".format(grupo_pred_personas.n).replace(",", ".") }} personas
+                            ({{ grupo_pred_personas.pct }}% del total).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <p class="text-secondary mb-1">Minoritario por registros</p>
+                        <h5 class="fw-bold mb-1">{{ grupo_min_conteo.nombre }}</h5>
+                        <p class="text-secondary mb-0">
+                            {{ "{:,}".format(grupo_min_conteo.n).replace(",", ".") }} registro(s)
+                            ({{ grupo_min_conteo.pct }}% del total). Hay varias categorías con 1 solo registro.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <p class="text-secondary mb-1">Minoritario por personas afectadas</p>
+                        <h5 class="fw-bold mb-1">{{ grupo_min_personas.nombre }}</h5>
+                        <p class="text-secondary mb-0">
+                            {{ "{:,.0f}".format(grupo_min_personas.n).replace(",", ".") }} personas
+                            ({{ grupo_min_personas.pct }}% del total). Varias categorías reportan 0 personas.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h4 fw-bold mb-3">
+                        Mayor concentración de personas afectadas
+                    </h2>
+
+                    <p class="text-secondary mb-0">
+
+                        El tipo de emergencia con mayor número de personas
+                        afectadas registradas es
+
+                        <strong>
+                            {{ evento_mayor }}
+                        </strong>,
+
+                        con
+
+                        <strong>
+                            {{ "{:,.0f}".format(personas_mayor).replace(",", ".") }}
+                        </strong>
+
+                        personas ({{ pct_evento_mayor }}% del total).
+
+                        Además, {{ "{:,}".format(eventos_sin_personas).replace(",", ".") }}
+                        eventos ({{ pct_sin_personas }}%) no registran personas afectadas,
+                        y las viviendas afectadas suman
+                        <strong>{{ "{:,}".format(total_viviendas).replace(",", ".") }}</strong>
+                        ({{ "{:,}".format(total_viv_destruidas).replace(",", ".") }} destruidas y
+                        {{ "{:,}".format(total_viv_averiadas).replace(",", ".") }} averiadas).
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4" id="visualizaciones">
+
+        <div class="col-12">
+            <h2 class="mb-1">5. Distribución de las variables principales</h2>
+            <p class="text-secondary mb-4">
+                Cómo se reparten PERSONAS, FAMILIAS, víctimas y viviendas según el tipo
+                de emergencia y la magnitud del evento.
+            </p>
+        </div>
+
+        <!-- grafico 1: composición hogar -->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        Composición del hogar afectado: personas y familias por tipo de emergencia
+                    </h2>
+
+                    <p class="text-secondary">
+                        Top 10 emergencias por personas afectadas, comparadas con sus familias afectadas.
+                        Mide el tamaño medio del hogar impactado, no el territorio.
+                    </p>
+
+                    <div id="grafico-hogar"></div>
+                    <p class="text-secondary">
+                        <br><strong>Interpretación:</strong> La composición del hogar cambia según el
+                        evento. La inundación lidera en ambas (1,73 M personas / 528.814 familias,
+                        ~3,3 por hogar, cercano al promedio 3,41). En cambio, el incendio estructural
+                        afecta a muchas personas (65.913) con pocas familias (2.599), lo que sugiere
+                        afectación colectiva o reporte diferente al hogar familiar. Esto es
+                        poblacional, no territorial: describe <em>cómo viven</em> los afectados.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- grafico 2: gravedad -->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        Gravedad: fallecidos, heridos y desaparecidos por tipo de emergencia
+                    </h2>
+
+                    <p class="text-secondary">
+                        Víctimas directas en los 10 tipos de emergencia con más fallecidos.
+                        Solo 6,4 fallecidos por cada 10.000 personas afectadas en el total.
+                    </p>
+
+                    <div id="grafico-victimas"></div>
+
+                    <p class="text-secondary">
+                        <strong>Interpretación:</strong> Volumen y gravedad no coinciden.
+                        El movimiento en masa concentra más fallecidos (362) y los accidentes de
+                        transporte terrestre más heridos (1.446), mientras la inundación —que
+                        concentra el 73% de personas— tiene letalidad relativa baja (54 fallecidos).
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- grafico 3: vivienda -->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        Hábitat: viviendas destruidas vs averiadas por tipo de emergencia
+                    </h2>
+
+                    <p class="text-secondary">
+                        Top 10 emergencias por viviendas afectadas. El 95,4% del daño es parcial
+                        (averiada), no total (destruida).
+                    </p>
+
+                    <div id="grafico-viviendas"></div>
+
+                    <p class="text-secondary">
+                        <br><strong>Interpretación:</strong> El impacto en vivienda es mayoritariamente
+                        avería (286.985) frente a destrucción (13.892). La inundación lidera ambas
+                        (7.158 destruidas y 199.197 averiadas); el movimiento en masa destruye más
+                        en proporción (2.250 / 10.045) y el ciclón tropical destruye 1.207 con solo
+                        9 eventos: pocos casos, daño habitacional severo.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- grafico 4: magnitud -->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        Distribución por magnitud: eventos según personas afectadas
+                    </h2>
+
+                    <p class="text-secondary">
+                        Cantidad de eventos agrupados por rango de personas afectadas.
+                    </p>
+
+                    <div id="grafico-rangos"></div>
+
+                    <p class="text-secondary">
+                        <br><strong>Interpretación:</strong> Distribución muy asimétrica y típicamente
+                        poblacional: 56,4% con 0 personas, 30% entre 1-50 y solo 4,2% con más de 500.
+                        Promedio 142 frente a mediana 0 y máximo 150.000: pocos eventos masivos
+                        explican casi todo el volumen.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mt-5">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-3">
+                6. Características generales de la población
+            </h2>
+
+            <p class="text-secondary mb-0">
+                Población mayoritariamente afectada por eventos hidrológicos
+                (inundación, creciente súbita, avenida torrencial), con hogares de
+                ~{{ personas_por_familia }} personas, impacto concentrado en pocos eventos masivos
+                (promedio {{ "{:,.1f}".format(promedio_personas).replace(",", ".") }}, mediana
+                {{ "{:,.0f}".format(mediana_personas).replace(",", ".") }}, máximo 150.000),
+                letalidad global baja ({{ tasa_fallecidos_10k }} por 10.000) pero alta en
+                movimiento en masa y transporte, y hábitat con daño parcial predominante
+                ({{ pct_averiadas }}% averiadas). El {{ pct_sin_personas }}% de registros sin personas
+                muestra una población registrada de forma desigual.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mt-5">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-4" id="hallazgos">
+                Hallazgos principales
+            </h2>
+
+            <div class="mb-4">
+                <h3 class="h6 fw-bold">
+                    1. La inundación concentra a la población afectada
+                </h3>
+
+                <p class="text-secondary mb-0">
+                    La inundación reúne aproximadamente 1.732.898 personas afectadas
+                    (73,1% del total), con solo el 16% de los eventos. En contraste,
+                    el incendio de cobertura vegetal es el evento más frecuente
+                    (5.610 registros, 33,6%) pero aporta apenas 1.446 personas.
+                    La frecuencia no equivale a impacto poblacional.
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="h6 fw-bold">
+                    2. Distribución poblacional muy desigual
+                </h3>
+
+                <p class="text-secondary mb-0">
+                    El 56,4% de los eventos registra 0 personas afectadas, el 30%
+                    afecta entre 1 y 50 personas y solo el 4,2% supera las 500.
+                    El promedio es 142 personas por evento, la mediana es 0 y el
+                    máximo llega a 150.000, lo que evidencia pocos eventos masivos
+                    frente a muchos eventos de bajo o nulo reporte poblacional.
+                </p>
+            </div>
+
+            <div>
+                <h3 class="h6 fw-bold">
+                    3. La gravedad y el daño a vivienda siguen otro patrón
+                </h3>
+
+                <p class="text-secondary mb-0">
+                    Se registran 1.521 fallecidos, 4.110 heridos y 140 desaparecidos.
+                    El movimiento en masa causa más fallecidos (362), el accidente de
+                    transporte terrestre más heridos (1.446) y la avenida torrencial
+                    más desaparecidos (27). En vivienda, hay 13.892 destruidas frente
+                    a 286.985 averiadas: el daño es mayoritariamente parcial y lo
+                    lidera también la inundación (7.158 destruidas y 199.197 averiadas).
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-3">
+                Limitación
+            </h2>
+
+            <p class="text-secondary mb-0">
+                Los datos corresponden a emergencias registradas y población
+                reportada como afectada, por lo que no representan necesariamente
+                la totalidad de emergencias ocurridas ni la población total
+                expuesta. Más de la mitad de los registros reporta cero personas
+                afectadas, lo que puede deberse a criterios de reporte o a
+                información incompleta.
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- decision -->
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-3" id="decision-datos">
+                Decisión basada en datos
+            </h2>
+
+            <p class="text-secondary mb-0">
+                La información poblacional puede utilizarse para priorizar la
+                atención en emergencias hidrológicas, en especial la inundación,
+                que concentra la mayor cantidad de personas y familias afectadas,
+                y para reforzar la prevención de eventos de alta letalidad como
+                el movimiento en masa y los accidentes de transporte, con el fin
+                de orientar los recursos de respuesta y recuperación.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="d-flex justify-content-between mt-5 mb-4">
+
+        <a href="{{ url_for('inicio') }}" class="btn btn-outline-success">
+            &laquo; Volver al Inicio
+        </a>
+
+        <a href="{{ url_for('territorial') }}" class="btn btn-success">
+            Ver Dimensión Territorial &raquo;
+        </a>
+
+    </div>
+
+</div>
+
 {% endblock %}
 
-{% block content %}
+{% block scripts %}
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+<script id="hogar-data" type="application/json">
+    {{ composicion_hogar | tojson }}
+</script>
+
+<script id="victimas-data" type="application/json">
+    {{ victimas_evento | tojson }}
+</script>
+
+<script id="viviendas-data" type="application/json">
+    {{ viviendas_evento | tojson }}
+</script>
+
+<script id="rangos-data" type="application/json">
+    {{ distribucion_rangos | tojson }}
+</script>
+
+<script>
+
+    // Grafico 1 - composición hogar: personas y familias (top 10)
+    const hogarData = JSON.parse(
+        document.getElementById("hogar-data").textContent
+    );
+
+    const evH = hogarData.map(item => item.EVENTO);
+
+    Plotly.newPlot(
+        "grafico-hogar",
+        [
+            {
+                x: evH,
+                y: hogarData.map(item => item.personas),
+                name: "Personas",
+                type: "bar"
+            },
+            {
+                x: evH,
+                y: hogarData.map(item => item.familias),
+                name: "Familias",
+                type: "bar"
+            }
+        ],
+        {
+            barmode: "group",
+            margin: { l: 70, r: 30, t: 20, b: 150 },
+            xaxis: { title: "Tipo de emergencia", tickangle: -30 },
+            yaxis: { title: "Personas / Familias afectadas" },
+            legend: { orientation: "h", y: 1.12 }
+        },
+        { responsive: true }
+    );
+
+    // Grafico 2 - victimas por evento (top 10 por fallecidos)
+    const victimasData = JSON.parse(
+        document.getElementById("victimas-data").textContent
+    ).slice(0, 10);
+
+    const evV = victimasData.map(item => item.EVENTO);
+
+    Plotly.newPlot(
+        "grafico-victimas",
+        [
+            {
+                x: evV,
+                y: victimasData.map(item => item.fallecidos),
+                name: "Fallecidos",
+                type: "bar"
+            },
+            {
+                x: evV,
+                y: victimasData.map(item => item.heridos),
+                name: "Heridos",
+                type: "bar"
+            },
+            {
+                x: evV,
+                y: victimasData.map(item => item.desaparecidos),
+                name: "Desaparecidos",
+                type: "bar"
+            }
+        ],
+        {
+            barmode: "group",
+            margin: { l: 60, r: 30, t: 20, b: 140 },
+            xaxis: { title: "Tipo de emergencia", tickangle: -30 },
+            yaxis: { title: "Víctimas registradas" },
+            legend: { orientation: "h", y: 1.12 }
+        },
+        { responsive: true }
+    );
+
+    // Grafico 3 - viviendas destruidas vs averiadas (top 10)
+    const viviendasData = JSON.parse(
+        document.getElementById("viviendas-data").textContent
+    ).slice(0, 10);
+
+    const evVi = viviendasData.map(item => item.EVENTO);
+
+    Plotly.newPlot(
+        "grafico-viviendas",
+        [
+            {
+                x: evVi,
+                y: viviendasData.map(item => item.destruidas),
+                name: "Destruidas",
+                type: "bar"
+            },
+            {
+                x: evVi,
+                y: viviendasData.map(item => item.averiadas),
+                name: "Averiadas",
+                type: "bar"
+            }
+        ],
+        {
+            barmode: "stack",
+            margin: { l: 60, r: 30, t: 20, b: 150 },
+            xaxis: { title: "Tipo de emergencia", tickangle: -30 },
+            yaxis: { title: "Viviendas afectadas" },
+            legend: { orientation: "h", y: 1.12 }
+        },
+        { responsive: true }
+    );
+
+    // Grafico 4 - distribucion por rangos
+    const rangosData = JSON.parse(
+        document.getElementById("rangos-data").textContent
+    );
+
+    const ordenRangos = ["0 (sin registro)", "1-5", "6-50", "51-500", "Más de 500"];
+
+    Plotly.newPlot(
+        "grafico-rangos",
+        [{
+            x: ordenRangos,
+            y: ordenRangos.map(r => rangosData[r] || 0),
+            type: "bar"
+        }],
+        {
+            margin: { l: 60, r: 30, t: 20, b: 100 },
+            xaxis: { title: "Rango de personas afectadas por evento", tickangle: -15 },
+            yaxis: { title: "Cantidad de eventos" }
+        },
+        { responsive: true }
+    );
+
+</script>
 
 {% endblock %}
