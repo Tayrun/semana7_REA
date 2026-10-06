@@ -19,6 +19,30 @@ MESES = {
 }
 
 
+NOMBRES_MESES = {
+    1: "Enero",
+    2: "Febrero",
+    3: "Marzo",
+    4: "Abril",
+    5: "Mayo",
+    6: "Junio",
+    7: "Julio",
+    8: "Agosto",
+    9: "Septiembre",
+    10: "Octubre",
+    11: "Noviembre",
+    12: "Diciembre"
+}
+
+
+NOMBRES_TRIMESTRES = {
+    1: "Primer trimestre",
+    2: "Segundo trimestre",
+    3: "Tercer trimestre",
+    4: "Cuarto trimestre"
+}
+
+
 COLUMNAS_NUMERICAS = [
     "PERSONAS",
     "FAMILIAS",
@@ -86,6 +110,10 @@ def _cargar():
     )
 
     df["mes"] = partes[1].map(MESES)
+
+    df["trimestre"] = (
+        (df["mes"] - 1) // 3 + 1
+    ).astype("Int64")
 
     df = df.drop_duplicates()
 

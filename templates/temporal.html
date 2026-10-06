@@ -1,13 +1,853 @@
 {% extends "base.html" %}
 
 {% block title %}
-Dimensión 02 - Análisis temporal
-{% endblock %}
-
-{% block extra_css %}
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='') }}"> -->
+Dimensión 03 - Análisis temporal
 {% endblock %}
 
 {% block content %}
+
+<div class="container-fluid px-4 px-lg-5 py-5">
+
+    <div class="mb-5">
+
+        <span class="badge text-bg-success mb-3">
+            DIMENSIÓN TEMPORAL
+        </span>
+
+        <h1 class="display-5 fw-bold" id="pregunta">
+            Análisis temporal
+        </h1>
+
+        <p class="lead text-secondary">
+            ¿Cómo ha cambiado el comportamiento de la población
+            durante el periodo disponible?
+        </p>
+
+        <p class="text-secondary mb-0">
+            Periodo analizado:
+            <strong>{{ etiqueta_periodo }}</strong>
+            · registros analizados:
+            <strong>{{ "{:,}".format(total_registros).replace(",", ".") }}</strong>
+            de las {{ "{:,}".format(total_dataset).replace(",", ".") }}
+            emergencias del conjunto de datos.
+        </p>
+
+    </div>
+
+    <section id="variables" class="mb-5">
+        <h2 class="mb-4">Variables utilizadas</h2>
+
+        <div class="row g-4">
+
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">FECHA</h5>
+                        <p class="card-text">
+                            Variable temporal del dataset. Se
+                            descomponió en año, trimestre y mes
+                            para agrupar los registros por
+                            periodo y comparar los cambios.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            Conteo de registros
+                        </h5>
+                        <p class="card-text">
+                            Número de emergencias reportadas
+                            en cada periodo. Mide la frecuencia
+                            con la que ocurren los eventos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            PERSONAS y FAMILIAS
+                        </h5>
+                        <p class="card-text">
+                            Población afectada reportada.
+                            Permiten comparar si el impacto
+                            sigue la misma curva que la
+                            frecuencia de los eventos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            FALLECIDOS, HERIDOS y
+                            DESAPARECIDOS
+                        </h5>
+                        <p class="card-text">
+                            Víctimas directas, usadas para
+                            observar si la gravedad de los
+                            eventos cambia con el tiempo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- filtros -->
+    <div class="card border-0 shadow-sm mb-5">
+
+        <div class="card-body p-4">
+
+            <h2 class="h5 fw-bold mb-4">
+                Filtros
+            </h2>
+
+            <form method="GET" action="{{ url_for('temporal') }}">
+
+                <div class="row g-4">
+
+                    <div class="col-12 col-md-6">
+
+                        <label for="anio" class="form-label fw-semibold">
+                            Año
+                        </label>
+
+                        <select class="form-select"
+                                id="anio"
+                                name="anio">
+
+                            <option value="Todos"
+                                {% if anio_seleccionado == "Todos" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Todos
+                            </option>
+
+                            {% for disponible in anios_disponibles %}
+
+                            <option value="{{ disponible }}"
+                                {% if anio_seleccionado == disponible|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ disponible }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-12 col-md-6">
+
+                        <label for="trimestre"
+                               class="form-label fw-semibold">
+                            Trimestre
+                        </label>
+
+                        <select class="form-select"
+                                id="trimestre"
+                                name="trimestre">
+
+                            <option value="Todos"
+                                {% if trimestre_seleccionado == "Todos" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Todos
+                            </option>
+
+                            {% for numero, nombre in [
+                                (1, "Primer trimestre (ene-mar)"),
+                                (2, "Segundo trimestre (abr-jun)"),
+                                (3, "Tercer trimestre (jul-sep)"),
+                                (4, "Cuarto trimestre (oct-dic)")
+                            ] %}
+
+                            <option value="{{ numero }}"
+                                {% if trimestre_seleccionado == numero|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ nombre }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+
+                    <button type="submit" class="btn btn-success">
+                        Aplicar filtros
+                    </button>
+
+                    <a href="{{ url_for('temporal') }}"
+                       class="btn btn-outline-secondary">
+                        Limpiar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4 mb-5" id="indicadores">
+
+        <div class="col-12 col-md-6 col-xl-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Registros en el periodo
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ "{:,}".format(total_registros).replace(",", ".") }}
+                    </h2>
+
+                    <small class="text-secondary">
+                        {{ "{:,}".format(registros_actual).replace(",", ".") }}
+                        en el periodo de referencia contra
+                        {{ "{:,}".format(registros_previo).replace(",", ".") }}
+                        del periodo anterior
+                        ({{ texto_comparacion }}:
+                        {% if var_registros > 0 %}
+                            <span class="text-success fw-bold">
+                                +{{ "{:.1f}".format(var_registros).replace(".", ",") }}%
+                            </span>
+                        {% elif var_registros < 0 %}
+                            <span class="text-danger fw-bold">
+                                {{ "{:.1f}".format(var_registros).replace(".", ",") }}%
+                            </span>
+                        {% else %}
+                            <span class="text-secondary fw-bold">
+                                0,0%
+                            </span>
+                        {% endif %}
+                        )
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Personas afectadas
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ "{:,.0f}".format(total_personas).replace(",", ".") }}
+                    </h2>
+
+                    <small class="text-secondary">
+                        {{ promedio_personas | numero(1) }}
+                        personas por evento (mediana
+                        {{ mediana_personas | numero(0) }})
+                        ·
+                        {{ "{:,.0f}".format(total_familias).replace(",", ".") }}
+                        familias
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <p class="text-secondary mb-2">
+                        Mes de mayor presión
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ mes_pico }}
+                    </h2>
+
+                    <small class="text-secondary">
+                        {{ "{:,}".format(registros_mes_pico).replace(",", ".") }}
+                        registros
+                        ({{ "{:.1f}".format(pct_mes_pico).replace(".", ",") }}%
+                        del periodo) ·
+                        los 3 meses más cargados concentran
+                        {{ "{:.1f}".format(pct_top_meses).replace(".", ",") }}%
+                        ·
+                        valle en {{ mes_valle }}
+                        ({{ "{:,}".format(registros_mes_valle).replace(",", ".") }})
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h4 fw-bold mb-2">
+                        1. Evolución mes a mes
+                    </h2>
+
+                    <p class="text-secondary">
+                        Registros y personas afectadas en cada
+                        mes del periodo seleccionado, con la
+                        variación porcentual frente al mes
+                        anterior. La tabla es la evidencia
+                        numérica de la primera visualización.
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Periodo</th>
+                                    <th class="text-end">Registros</th>
+                                    <th class="text-end">Variación</th>
+                                    <th class="text-end">Personas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for punto in puntos_mensuales %}
+                                <tr>
+                                    <td>
+                                        {{ punto.etiqueta }}
+                                        <small class="text-secondary">
+                                            {{ punto.nombre_mes }}
+                                        </small>
+                                    </td>
+                                    <td class="text-end">
+                                        {{ "{:,}".format(punto.registros).replace(",", ".") }}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if punto.var_pct > 0 %}
+                                            <span class="text-success">
+                                                +{{ "{:.1f}".format(punto.var_pct).replace(".", ",") }}%
+                                            </span>
+                                        {% elif punto.var_pct < 0 %}
+                                            <span class="text-danger">
+                                                {{ "{:.1f}".format(punto.var_pct).replace(".", ",") }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="text-secondary">
+                                                —
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {{ "{:,.0f}".format(punto.personas).replace(",", ".") }}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-secondary">
+                                        No hay registros para el
+                                        periodo seleccionado.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4" id="visualizaciones">
+
+        <div class="col-12">
+            <h2 class="mb-1">Visualizaciones</h2>
+            <p class="text-secondary mb-4">
+                Las tres gráficas se generan directamente
+                desde el conjunto de datos descargado, con
+                los filtros aplicados.
+            </p>
+        </div>
+
+        <!-- grafico 1 -->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        1. Evolución mensual de las emergencias
+                    </h2>
+
+                    <p class="text-secondary">
+                        Registros por mes en todo el periodo.
+                        Las barras verdes son meses que superan
+                        al mes anterior y las rojas los que
+                        bajan, lo que hace visibles los aumentos
+                        y disminuciones.
+                    </p>
+
+                    <div id="grafico-evolucion"></div>
+
+                    <p class="text-secondary">
+                        <strong>Interpretación:</strong>
+                        {{ interp_evolucion }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- grafico 2 -->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        2. Comparación entre años: frecuencia
+                        frente a impacto
+                    </h2>
+
+                    <p class="text-secondary">
+                        Barras: número de registros por año
+                        (eje izquierdo). Línea: personas
+                        afectadas (eje derecho). Permite ver si
+                        ambos indicadores avanzan juntos.
+                    </p>
+
+                    <div id="grafico-anual"></div>
+
+                    <p class="text-secondary">
+                        <strong>Interpretación:</strong>
+                        {{ interp_anual }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- grafico 3 -->
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        3. Estacionalidad: los 12 meses del año
+                    </h2>
+
+                    <p class="text-secondary">
+                        Registros agrupados por mes del
+                        calendario, sumando todos los años del
+                        filtro. Si el comportamiento es
+                        estacional, los picos aparecen en los
+                        mismos meses.
+                    </p>
+
+                    <div id="grafico-estacionalidad"></div>
+
+                    <p class="text-secondary">
+                        <strong>Interpretación:</strong>
+                        {{ interp_estacionalidad }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mt-5">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-2">
+                Evolución por trimestre
+            </h2>
+
+            <p class="text-secondary">
+                Comparación entre periodos trimestrales con
+                su variación, para leer los cambios a menor
+                escala que el año.
+            </p>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Trimestre</th>
+                            <th class="text-end">Registros</th>
+                            <th class="text-end">Variación</th>
+                            <th class="text-end">Personas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for punto in puntos_trimestrales %}
+                        <tr>
+                            <td>{{ punto.etiqueta }}</td>
+                            <td class="text-end">
+                                {{ "{:,}".format(punto.registros).replace(",", ".") }}
+                            </td>
+                            <td class="text-end">
+                                {% if punto.var_pct > 0 %}
+                                    <span class="text-success">
+                                        +{{ "{:.1f}".format(punto.var_pct).replace(".", ",") }}%
+                                    </span>
+                                {% elif punto.var_pct < 0 %}
+                                    <span class="text-danger">
+                                        {{ "{:.1f}".format(punto.var_pct).replace(".", ",") }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-secondary">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {{ "{:,.0f}".format(punto.personas).replace(",", ".") }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-secondary">
+                                No hay registros para el periodo
+                                seleccionado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mt-5" id="hallazgos">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-4">
+                Conocimientos evidentes
+            </h2>
+
+            {% for conocimiento in [
+                conocimiento_1,
+                conocimiento_2,
+                conocimiento_3
+            ] %}
+
+            <div class="card border-0 bg-light mb-4">
+
+                <div class="card-body">
+
+                    <h3 class="h6 fw-bold">
+                        {{ conocimiento.titulo }}
+                    </h3>
+
+                    <p class="mb-2">
+                        <strong>Pregunta:</strong>
+                        {{ conocimiento.pregunta }}
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Variables:</strong>
+                        {{ conocimiento.variables }}
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Procedimiento:</strong>
+                        {{ conocimiento.procedimiento }}
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Evidencia:</strong>
+                        {{ conocimiento.evidencia }}
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Hallazgo:</strong>
+                        {{ conocimiento.hallazgo }}
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Interpretación:</strong>
+                        {{ conocimiento.interpretacion }}
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Utilidad:</strong>
+                        {{ conocimiento.utilidad }}
+                    </p>
+
+                    <p class="mb-0">
+                        <strong>Limitación:</strong>
+                        {{ conocimiento.limitacion }}
+                    </p>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-3">
+                Limitación
+            </h2>
+
+            <p class="text-secondary mb-0">
+                El periodo analizado cubre cuatro años
+                (2019-2022) y las cifras corresponden a
+                emergencias registradas y población reportada
+                como afectada, no a la totalidad de los eventos
+                ocurridos ni a la población realmente expuesta.
+                Además, el dataset descarta duplicados exactos
+                en la limpieza, por lo que el conteo de
+                registros puede quedar por debajo del total
+                reportado por la entidad, y más de la mitad de
+                los registros no informa personas afectadas,
+                lo que limita cualquier comparación de impacto
+                a lo largo del tiempo.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-body p-4">
+
+            <h2 class="h4 fw-bold mb-3">
+                Decisión basada en datos
+            </h2>
+
+            <p class="text-secondary mb-0">
+                El comportamiento temporal permite
+                planificar la respuesta en dos fronts. Por un
+                lado, la concentración estacional de las
+                emergencias habilita burbujear y mantener
+                brigadas, equipos de maquinaria y reservas de
+                insumos de alimentación y apoyo antes del
+                arranque de cada temporada de lluvias. Por otro
+                lado, como el número de registros y el de
+                personas afectadas no se mueven juntos, la
+                priorización no debe hacerse solo por volumen
+                de reportes: cada trimestre debe reasignarse
+                con una mezcla de frecuencia y tamaño del
+                evento para que la respuesta llegue donde hay
+                más población en riesgo.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="d-flex justify-content-between mt-5 mb-4">
+
+        <a href="{{ url_for('territorial') }}"
+           class="btn btn-outline-success">
+            &laquo; Volver a Dimensión Territorial
+        </a>
+
+        <a href="{{ url_for('inicio') }}" class="btn btn-success">
+            Volver al Inicio &raquo;
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+<script id="evolucion-data" type="application/json">
+    {{ puntos_mensuales | tojson }}
+</script>
+
+<script id="anual-data" type="application/json">
+    {{ serie_anual | tojson }}
+</script>
+
+<script id="estacional-data" type="application/json">
+    {{ estacionalidad | tojson }}
+</script>
+
+<script>
+
+    // Grafico 1 - evolucion mensual, color por aumento/disminucion
+
+    const evolucionData = JSON.parse(
+        document.getElementById("evolucion-data").textContent
+    );
+
+    Plotly.newPlot(
+        "grafico-evolucion",
+        [{
+            x: evolucionData.map(p => p.etiqueta),
+            y: evolucionData.map(p => p.registros),
+            type: "bar",
+            marker: {
+                color: evolucionData.map(p =>
+                    p.sube ? "#198754" : "#dc3545"
+                )
+            },
+            hovertemplate:
+                "<b>%{x}</b><br>Registros: %{y}<extra></extra>"
+        }],
+        {
+            margin: { l: 70, r: 30, t: 20, b: 110 },
+            xaxis: { title: "Periodo (año-mes)", tickangle: -60 },
+            yaxis: { title: "Registros de emergencia" },
+            bargap: 0.25
+        },
+        { responsive: true }
+    );
+
+    // Grafico 2 - comparacion entre anios, registros vs personas
+
+    const anualData = JSON.parse(
+        document.getElementById("anual-data").textContent
+    );
+
+    Plotly.newPlot(
+        "grafico-anual",
+        [
+            {
+                x: anualData.map(a => a.anio),
+                y: anualData.map(a => a.registros),
+                type: "bar",
+                name: "Registros",
+                marker: { color: "#6f927d" },
+                yaxis: "y"
+            },
+            {
+                x: anualData.map(a => a.anio),
+                y: anualData.map(a => a.personas),
+                type: "scatter",
+                mode: "lines+markers",
+                name: "Personas afectadas",
+                line: { color: "#dc3545", width: 3 },
+                marker: { size: 9 },
+                yaxis: "y2"
+            }
+        ],
+        {
+            margin: { l: 70, r: 80, t: 40, b: 60 },
+            xaxis: { title: "Año" },
+            yaxis: { title: "Registros" },
+            yaxis2: {
+                title: "Personas afectadas",
+                overlaying: "y",
+                side: "right"
+            },
+            legend: { orientation: "h", y: 1.15 }
+        },
+        { responsive: true }
+    );
+
+    // Grafico 3 - estacionalidad por mes del calendario
+
+    const estacionalData = JSON.parse(
+        document.getElementById("estacional-data").textContent
+    );
+
+    Plotly.newPlot(
+        "grafico-estacionalidad",
+        [
+            {
+                x: estacionalData.map(m => m.nombre),
+                y: estacionalData.map(m => m.registros),
+                type: "bar",
+                name: "Registros",
+                marker: { color: "#557a68" },
+                yaxis: "y"
+            },
+            {
+                x: estacionalData.map(m => m.nombre),
+                y: estacionalData.map(m => m.personas),
+                type: "scatter",
+                mode: "lines+markers",
+                name: "Personas afectadas",
+                line: { color: "#dc3545", width: 3 },
+                marker: { size: 8 },
+                yaxis: "y2"
+            }
+        ],
+        {
+            margin: { l: 70, r: 80, t: 40, b: 100 },
+            xaxis: { title: "Mes del año", tickangle: -45 },
+            yaxis: { title: "Registros" },
+            yaxis2: {
+                title: "Personas afectadas",
+                overlaying: "y",
+                side: "right"
+            },
+            legend: { orientation: "h", y: 1.18 }
+        },
+        { responsive: true }
+    );
+
+</script>
 
 {% endblock %}
